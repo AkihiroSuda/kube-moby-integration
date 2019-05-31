@@ -24,18 +24,15 @@ $ kubectl apply -f kube-moby-integration.generated.yaml
 
 Watch output:
 ```console
-$ kubectl get job kube-moby-integration
-$ kubectl get pods -l job-name=kube-moby-integration
-$ ./kubectl-logs-all-pods.sh
+$ kubectl get jobs -l jobgroup=kube-moby-integration
+$ ./kubectl-logs-all.sh
 ```
 
 ## Implementation Note
 
 As of June 2019, Kubernetes still does not implement "Indexed Job": https://github.com/kubernetes/kubernetes/issues/14188
 
-`kube-moby-integration` [emulates "Indexed Job" using `kubectl get pods`](./src/poor-mans-job-index.sh) but often results in duplicated Indices due to race conditions.
-So some of test functions might be sometimes skipped but should not be always critical for testing purpose.
-
 The proper way to solve the issue would be to have a queue, but it seems kind of over-engineering: https://kubernetes.io/docs/tasks/job/fine-parallel-processing-work-queue/#starting-redis
 
-Or maybe we should use `StatefulSet` instead of `Job`.
+So currently this project is implemented with "Job Group" pattern: https://kubernetes.io/docs/tasks/job/parallel-processing-expansion/
+
